@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -22,23 +21,16 @@ type ResponseMessage struct {
 	Message string `json:"message"`
 }
 
-func loadEnv() error {
-	envLoad := godotenv.Load(".env")
-	if envLoad != nil {
-		return fmt.Errorf("error loading .env file: %s", envLoad)
+func init() {
+	if os.Getenv("APP_ENV") != "production"{
+		godotenv.Load(".env")
 	}
-	return nil
+
 }
 
 func SendEmail(w http.ResponseWriter, r *http.Request) {
-	env := loadEnv()
-	if env != nil {
-		log.Fatalf("Error loading env: %s", env)
-	}
-
 	EMAIL_RECIPIENT := os.Getenv("EMAIL")
 	PASS_RECIPIENT := os.Getenv("PASSWORD")
-
 	var emailRequest EmailRequest
 	err := json.NewDecoder(r.Body).Decode(&emailRequest)
 	if err != nil {
@@ -70,12 +62,6 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	env := loadEnv()
-	if env != nil {
-		log.Fatalf("Error loading env: %s", env)
-	}
-
 	r := mux.NewRouter()
 	r.HandleFunc("/send-email", SendEmail).Methods("POST")
 
@@ -86,7 +72,7 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr:    "0.0.0.0:" + port,
+		Addr: port,
 		Handler: r,
 	}
 
