@@ -18,11 +18,22 @@ type EmailRequest struct {
 	Body    string `json:"body"`
 }
 
-func SendEmail(w http.ResponseWriter, r *http.Request) {
+type ResponseMessage struct {
+	Message string `json:"message"`
+}
 
+func loadEnv() error {
 	envLoad := godotenv.Load(".env")
 	if envLoad != nil {
-		log.Fatalf("Error loading .env file: %s", envLoad)
+		return fmt.Errorf("error loading .env file: %s", envLoad)
+	}
+	return nil
+}
+
+func SendEmail(w http.ResponseWriter, r *http.Request) {
+	env := loadEnv()
+	if env != nil {
+		log.Fatalf("Error loading env: %s", env)
 	}
 
 	EMAIL_RECIPIENT := os.Getenv("EMAIL")
@@ -50,14 +61,38 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprint(w, "Email berhasil dikirim")
+	response := ResponseMessage{
+		Message: "Email berhasil dikirim",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 func main() {
+
+	env := loadEnv()
+	if env != nil {
+		log.Fatalf("Error loading env: %s", env)
+	}
+
 	r := mux.NewRouter()
 	r.HandleFunc("/send-email", SendEmail).Methods("POST")
 
-	port := ":8080"
-	fmt.Printf("Server berjalan di http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, r))
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("Port is required")
+	}
+
+	server := &http.Server{
+		Addr:    "0.0.0.0:" + port,
+		Handler: r,
+	}
+
+	log.Println("Server starting at", server.Addr)
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
