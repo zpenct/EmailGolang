@@ -72,7 +72,7 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr: port,
+		Addr: ":" + port,
 		Handler: r,
 	}
 
