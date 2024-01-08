@@ -74,8 +74,9 @@ func main() {
 	}
 
 	log.Println("Server starting at", server.Addr)
-	err := server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	server.ListenAndServe()
+	// err := server.ListenAndServe()
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 }
