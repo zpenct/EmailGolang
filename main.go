@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"gopkg.in/gomail.v2"
 )
 
@@ -22,19 +21,7 @@ type ResponseMessage struct {
 	Message string `json:"message"`
 }
 
-func loadEnv() error {
-	envLoad := godotenv.Load(".env")
-	if envLoad != nil {
-		return fmt.Errorf("error loading .env file: %s", envLoad)
-	}
-	return nil
-}
-
 func SendEmail(w http.ResponseWriter, r *http.Request) {
-	env := loadEnv()
-	if env != nil {
-		log.Fatalf("Error loading env: %s", env)
-	}
 
 	EMAIL_RECIPIENT := os.Getenv("EMAIL")
 	PASS_RECIPIENT := os.Getenv("PASSWORD")
@@ -42,7 +29,7 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 	var emailRequest EmailRequest
 	err := json.NewDecoder(r.Body).Decode(&emailRequest)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Error decoding request body: %s", err.Error()), http.StatusBadRequest)
 		return
 	}
 
@@ -55,6 +42,7 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 
 	// Mengirim email
 	dialer := gomail.NewDialer("smtp.gmail.com", 587, EMAIL_RECIPIENT, PASS_RECIPIENT)
+
 	err = dialer.DialAndSend(mailer)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -70,11 +58,6 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	env := loadEnv()
-	if env != nil {
-		log.Fatalf("Error loading env: %s", env)
-	}
 
 	r := mux.NewRouter()
 	r.HandleFunc("/send-email", SendEmail).Methods("POST")
