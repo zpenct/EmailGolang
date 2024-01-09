@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 	"github.com/joho/godotenv"
 	"gopkg.in/gomail.v2"
 )
@@ -105,9 +106,14 @@ func main() {
 		Handler: r,
 	}
 
+	originsOk :=handlers.AllowedOrigins([]string{"*"})
+	methodsOk :=handlers.AllowedMethods([]string{"GET","POST"})
+	headersOk :=handlers.AllowedHeaders([]string{"Content-Type"})
+
 	log.Println("Server starting at", server.Addr)
-	err := server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	// server.ListenAndServe(handlers.CORS(originOk,methodOk,headersOk)(r))
+	log.Fatal(http.ListenAndServe(":" + os.Getenv("PORT"), handlers.CORS(originsOk, headersOk, methodsOk)(r)))
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// }
 }
