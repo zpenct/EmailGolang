@@ -89,7 +89,7 @@ func main() {
 	r.Use(enableCORS)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		w.Write([]byte("Hiya, ngapain?"))
 	}).Methods("GET")
 
 	r.HandleFunc("/send-email", SendEmail).Methods("POST")
