@@ -22,7 +22,7 @@ type ResponseMessage struct {
 }
 
 func init() {
-	if os.Getenv("APP_ENV") != "production"{
+	if os.Getenv("APP_ENV") != "production" {
 		godotenv.Load(".env")
 	}
 
@@ -61,8 +61,37 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// Middleware to enable CORS
+
+func enableCORS(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		//Allow requests from any origin
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		// Allow specified HTTP methods
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+
+		// Allow specified headers
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
+
+		// Continue with the next handler
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	r := mux.NewRouter()
+
+	// Enable CORS middleware
+
+	r.Use(enableCORS)
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, World!"))
+	}).Methods("GET")
+
 	r.HandleFunc("/send-email", SendEmail).Methods("POST")
 
 	port := os.Getenv("PORT")
@@ -72,7 +101,7 @@ func main() {
 	}
 
 	server := &http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
 		Handler: r,
 	}
 
