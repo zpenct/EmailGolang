@@ -62,32 +62,8 @@ func SendEmail(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// Middleware to enable CORS
-
-func enableCORS(next http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		//Allow requests from any origin
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		// Allow specified HTTP methods
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-
-		// Allow specified headers
-		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
-
-		// Continue with the next handler
-		next.ServeHTTP(w, r)
-	})
-}
-
 func main() {
 	r := mux.NewRouter()
-
-	// Enable CORS middleware
-
-	r.Use(enableCORS)
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hiya, ngapain?"))
@@ -106,12 +82,11 @@ func main() {
 		Handler: r,
 	}
 
-	originsOk :=handlers.AllowedOrigins([]string{"*"})
+	originsOk :=handlers.AllowedOrigins([]string{"https://sendawa.vercel.app", "http://localhost:3000", "http://localhost:5000"})
 	methodsOk :=handlers.AllowedMethods([]string{"GET","POST"})
 	headersOk :=handlers.AllowedHeaders([]string{"Content-Type"})
 
 	log.Println("Server starting at", server.Addr)
-	// server.ListenAndServe(handlers.CORS(originOk,methodOk,headersOk)(r))
 	log.Fatal(http.ListenAndServe(":" + os.Getenv("PORT"), handlers.CORS(originsOk, headersOk, methodsOk)(r)))
 	// if err != nil {
 	// 	log.Fatal(err.Error())
