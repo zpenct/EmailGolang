@@ -82,7 +82,7 @@ func main() {
 		Handler: r,
 	}
 
-	originsOk :=handlers.AllowedOrigins([]string{"*"})
+	originsOk :=handlers.AllowedOrigins([]string{"https://sendawa.vercel.app","http://localhost:3000","http://localhost:5000"})
 	methodsOk :=handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"})
 	headersOk :=handlers.AllowedHeaders([]string{"Content-Type"})
 
